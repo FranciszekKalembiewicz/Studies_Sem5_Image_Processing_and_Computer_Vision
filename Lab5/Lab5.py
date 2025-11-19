@@ -8,11 +8,9 @@ def bilinear_resize(image, scale):
     new_h = int(h * scale)
     new_w = int(w * scale)
 
-    # wynik jako float32, później zamienimy na uint8
     result = np.zeros((new_h, new_w, image.shape[2]), dtype=np.float32)
 
     for y_new in range(new_h):
-        # współrzędna w starym obrazie
         y = y_new / scale
         y0 = int(np.floor(y))
         y1 = min(y0 + 1, h - 1)
@@ -24,13 +22,11 @@ def bilinear_resize(image, scale):
             x1 = min(x0 + 1, w - 1)
             dx = x - x0
 
-            # 4 sąsiednie piksele
             p00 = image[y0, x0].astype(np.float32)
             p10 = image[y0, x1].astype(np.float32)
             p01 = image[y1, x0].astype(np.float32)
             p11 = image[y1, x1].astype(np.float32)
 
-            # interpolacja najpierw w poziomie, potem w pionie
             top = (1 - dx) * p00 + dx * p10
             bottom = (1 - dx) * p01 + dx * p11
             value = (1 - dy) * top + dy * bottom
@@ -39,28 +35,16 @@ def bilinear_resize(image, scale):
 
     return result.astype(np.uint8)
 
-
-img = cv2.imread('image.jpg', cv2.IMREAD_COLOR)
-
-
 def nothing(x):
     pass
 
+img = cv2.imread('image.jpg', cv2.IMREAD_COLOR)
 
 cv2.namedWindow("Original")
 cv2.namedWindow("Resized")
 
 cv2.createTrackbar("Scale", "Original", 10, 30, nothing)
 cv2.createTrackbar("Mode", "Original", 0, 4, nothing)
-
-"""
-cv2.INTER NEAREST – najbliższy sąsiad, 0
-cv2.INTER LINEAR – biliniowa, 1
-cv2.INTER CUBIC – bikubiczna, 2
-cv2.INTER LANCZOS4 – Lanczos. 3
-moja bilinear 4
-
-"""
 
 prev_scale = -1
 prev_mode = -1
