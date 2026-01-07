@@ -7,9 +7,6 @@ import numpy as np
 import torch.nn as nn
 import os
 
-
-# --- 1. PRZYGOTOWANIE DANYCH (potrzebne do wyświetlenia przykładów testowych) ---
-
 def gaussian_noise(image, var=0.1):
     sigma = var ** 0.5
     gaussian = torch.randn_like(image) * sigma
@@ -17,17 +14,12 @@ def gaussian_noise(image, var=0.1):
     noisy_image = torch.clamp(noisy_image, 0.0, 1.0)
     return noisy_image
 
-
 print("Ładowanie danych testowych...")
 transform = transforms.ToTensor()
-# Pobieramy tylko testowe, żeby było szybciej (treningowe nie są potrzebne do wyświetlania wyników)
 test_dataset = torchvision.datasets.FashionMNIST(root='./data', train=False, download=True, transform=transform)
 
 test_clean_all = torch.stack([img for img, _ in test_dataset])
 test_noisy_all = torch.stack([gaussian_noise(img) for img in test_clean_all])
-
-
-# --- 2. DEFINICJA MODELU (Musi być taka sama jak przy treningu) ---
 
 class AutoEncoder(nn.Module):
     def __init__(self):
@@ -61,9 +53,6 @@ class AutoEncoder(nn.Module):
         x = self.decoder(x)
         return x
 
-
-# --- 3. INICJALIZACJA I WCZYTANIE WAG ---
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Używane urządzenie: {device}")
 
@@ -72,18 +61,15 @@ model = AutoEncoder().to(device)
 # Sprawdzenie czy plik istnieje
 weights_path = 'autoencoder.pth'
 if os.path.exists(weights_path):
-    # map_location=device pozwala wczytać model trenowany na CPU na GPU i odwrotnie
     model.load_state_dict(torch.load(weights_path, map_location=device))
     print("Sukces: Wczytano wytrenowany model.")
 else:
     print(f"BŁĄD: Nie znaleziono pliku {weights_path}. Upewnij się, że uruchamiasz skrypt w dobrym folderze.")
     exit()
 
-model.eval()  # Przełączenie w tryb ewaluacji (wyłącza dropouty, batchnormy itp.)
+model.eval()
 
-# --- 4. WIZUALIZACJA WYNIKÓW ---
-
-offset = 1002  # Przesunięcie, żeby zobaczyć inne obrazki niż na początku
+offset = 1002
 
 # A. Oryginalne (Czyste)
 print("Generowanie wykresów...")
